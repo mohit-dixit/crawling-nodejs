@@ -9,40 +9,42 @@ var express = require('express'),
 	BASE_URL = 'https://data.gov.in/';
 
 app.get('/scrap', function (req, res) {
+    console.time('TIME-TO-SCRAPE');
+	startScraping().then(result => {
+        console.log('COMPLETED!!!!!');
+    	console.timeEnd('TIME-TO-SCRAPE');
+	})
+});
+
+async function startScraping() {
 	for (let i = 0; i <= 5; i++) {
 		let url = getNextPageURL(i);
-		crawling(url,i, function (finalOutput) {
-			//console.log(finalOutput)
-			if (finalOutput) {
-				//Can do further code
-			}
-		});
+		let output =  await crawling(url,i);
 	}
-});
+};
 
 async function crawling(url,index) {
 	let stateArray = await getCurrentPageHtml(url);	
 	if (stateArray.length > 0){
 		for( let i = 0; i < stateArray.length; i++ ) {
 			debugger;
-			console.log('New State   ',stateArray[i])
+			console.log('New State   ',stateArray[i]);
 			let csvRecords = await getCSVRecords(stateArray[i]);
 			//console.log(csvRecords);
 			for(record of csvRecords){
-				console.log('xxxxxxxxxxxx   '+ record)
+				console.log('xxxxxxxxxxxx   ', 'record')
 				debugger;
 				let finalJson = await getPageDetailsUsingUrnId(record.urnId);
-				console.log(finalJson);
-			}			
+			}
 		}
 	}
 }
 
 function getPageDetailsUsingUrnId(urnId)
 {
-	console.log('fffffffffffff   '+ urnId);
+	// console.log('fffffffffffff   '+ urnId);
 	let url = 'https://www.zaubacorp.com/company/-/'+ urnId;
-	console.log('nnnnnnnnnnnnnn   '+ url);
+	// console.log('nnnnnnnnnnnnnn   '+ url);
 	let options = {
 		uri: url,
 		transform: function (html) {
@@ -51,7 +53,7 @@ function getPageDetailsUsingUrnId(urnId)
 	};
 	
 	return rp(options).then(function ($) {
-			console.log('ggggggggggggg');
+			// console.log('ggggggggggggg');
 			let counter = 0,
 				json ,
 				array = [];
@@ -84,7 +86,7 @@ function getPageDetailsUsingUrnId(urnId)
 
 
 			if( array ){
-				console.log( array )
+				// console.log( array )
 				return array;
 			}
 		})
