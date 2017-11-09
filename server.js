@@ -17,34 +17,47 @@ app.get('/scrap', function (req, res) {
 });
 
 async function startScraping() {
-	for (let i = 0; i <= 5; i++) {
+	let output = [];
+	for (let i = 0; i <= 1; i++) {
 		let url = getNextPageURL(i);
-		let output =  await crawling(url,i);
+		let records =  await crawling(url,i);
+		output.push(records);
+		console.log('Output Length  ' + output.length);
+	}
+	for(element of output){
+		console.log('Sheets  ' + element.length);
+		for(sheets of element) {
+			console.log('Records  ' + sheets.length);
+			let count = 0;
+			for(record of sheets) {
+				// if(['Mizoram','Lakshadweep'].indexOf(record.stateName) > -1)
+				// {
+				console.log('URN     ' + count + '    ' + record.stateName + '    ---    ' + record.urnId);
+				let finalJson = await getPageDetailsUsingUrnId(record.urnId);
+				//console.log(finalJson);
+				count++;
+				//}
+			}
+		}		
 	}
 };
 
 async function crawling(url,index) {
 	let stateArray = await getCurrentPageHtml(url);	
+	let stateUrns = [];
 	if (stateArray.length > 0){
 		for( let i = 0; i < stateArray.length; i++ ) {
-			debugger;
 			console.log('New State   ',stateArray[i]);
 			let csvRecords = await getCSVRecords(stateArray[i]);
-			//console.log(csvRecords);
-			for(record of csvRecords){
-				console.log('xxxxxxxxxxxx   ', 'record')
-				debugger;
-				let finalJson = await getPageDetailsUsingUrnId(record.urnId);
-			}
+			stateUrns.push(csvRecords);
+			console.log(csvRecords.length);			
 		}
+		return stateUrns;
 	}
 }
-
 function getPageDetailsUsingUrnId(urnId)
 {
-	// console.log('fffffffffffff   '+ urnId);
 	let url = 'https://www.zaubacorp.com/company/-/'+ urnId;
-	// console.log('nnnnnnnnnnnnnn   '+ url);
 	let options = {
 		uri: url,
 		transform: function (html) {
@@ -53,12 +66,9 @@ function getPageDetailsUsingUrnId(urnId)
 	};
 	
 	return rp(options).then(function ($) {
-			// console.log('ggggggggggggg');
 			let counter = 0,
 				json ,
 				array = [];
-
-
 			$('.table.table-striped').each(function(item, index) {
 				$(this).addClass('table_crawal_' + counter);
 				otArr   = [];
@@ -82,11 +92,7 @@ function getPageDetailsUsingUrnId(urnId)
 				array.push( json )
 				counter++;
 			});
-
-
-
 			if( array ){
-				// console.log( array )
 				return array;
 			}
 		})
@@ -165,7 +171,6 @@ function getFinalDataUrl(urnID) {
 		if (!error) {
 			$('.company-data.uppercase').filter(function (item, index) {
 				var data = $(this);
-				// console.log("datadatadatadata:"+data);
 			});
 		}
 	});
