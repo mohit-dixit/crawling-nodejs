@@ -28,56 +28,48 @@ for (let i = 0; i <= 0; i++) {
 	let url = getNextPageURL(i);
 	let result = await crawling(url,i);
 	output = Object.assign(output, result);
-	console.log('Output Length  ' + Object.keys(output).length);
 }
 
 //process urn state wise and store result in finalJSON
 let finalStateJsonArray = [];
 
-for( element of output ){
-	for(sheets of element) {
-		let count = 0;
-		for(record of sheets) {
-			if(record.stateName === 'Lakshadweep'){
-				console.log('URN     ' + count + '    ' + record.stateName + '    ---    ' + record.urnId);
-				let finalJson = await getPageDetailsUsingUrnId( record.urnId );
+for(state in output){
+	console.log('Parsing.....', state);
+	if(state === 'Tripura')
+	{
+		let element = output[state];
+		let loopcounter = 0;
+			for(record of element) {
+					let finalJson = await getPageDetailsUsingUrnId( record.urnId );
 
-				//DB Entry
-				let stateName = record.stateName;
-				let stateTableSchema = createTableByStateName( stateName );
-				let inc = {};
+					//DB Entry
+					let stateName = record.stateName;
+					//let stateTableSchema = createTableByStateName( stateName );
+					let inc = {};
 
-				finalJson.forEach( function( tableData ){
-					let mergedObject = Object.assign( inc, tableData );
-				});
+					let mergedObject={};
+					finalJson.forEach( function( tableData ){
+						mergedObject = Object.assign( inc, tableData );
+					});
 
-				//console.log(inc);
+					console.log(record.stateName + '  --  ' +loopcounter);
 
-				if( inc ){
-					finalStateJsonArray.push({State: record.stateName, Json : inc});
+					if( inc ){
+						finalStateJsonArray.push({State: record.stateName, Json : mergedObject});
 
-					//console.log(finalStateJsonArray);
-					// sequelize.sync()
-					//     .then(() => stateTableSchema.create( inc ) );
-				}
+						//console.log(finalStateJsonArray);
+						// sequelize.sync()
+						//     .then(() => stateTableSchema.create( inc ) );
+					}
 
-				//console.log('DB Entry Done');
-				//DB Entry
-
-				count++;
-
-			} else {
-			   //console.log(record.stateName);
-			}
-
-		}
-
-		console.log('Array     ' + finalStateJsonArray )
+					//console.log('DB Entry Done');
+					//DB Entry
+					loopcounter++;
+		}		
 	}
-
 }
 
-debugger
+console.log('FINAL....     ', finalStateJsonArray )
 //make entry of final json in DB
 
 };
@@ -289,32 +281,32 @@ function getUrlToDownloadCSV(stateName) {
 return BASE_URL + 'sites/default/files/dataurl15092015/company_master_data_upto_Mar_2015_' + stateName + ".csv";
 }
 
-function createTableByStateName( stateName ){
-const stateTableName = sequelize.define(stateName, {
-	cin 								: Sequelize.STRING,
-	company_name						: Sequelize.STRING,
-	company_status						: Sequelize.STRING,
-	roc									: Sequelize.STRING,
-	registration_number					: Sequelize.STRING,
-	company_category					: Sequelize.STRING,
-	company_sub_category				: Sequelize.STRING,
-	class_of_company					: Sequelize.STRING,
-	date_of_incorporation				: Sequelize.STRING,
-	age_of_company						: Sequelize.STRING,
-	activity							: Sequelize.STRING,
-	number_of_members					: Sequelize.STRING,
-	authorised_capital					: Sequelize.STRING,
-	paid_up_capital						: Sequelize.STRING,
-	number_of_employees					: Sequelize.STRING,
-	listing_status						: Sequelize.STRING,
-	date_of_last_annual_general_meeting	: Sequelize.STRING,
-	date_of_latest_balance_sheet		: Sequelize.STRING,
-	_email_id							: Sequelize.STRING,
-	address								: Sequelize.STRING,
-	directors							: Sequelize.STRING
-});
-return stateTableName;
-}
+// function createTableByStateName( stateName ){
+// const stateTableName = sequelize.define(stateName, {
+// 	cin 								: Sequelize.STRING,
+// 	company_name						: Sequelize.STRING,
+// 	company_status						: Sequelize.STRING,
+// 	roc									: Sequelize.STRING,
+// 	registration_number					: Sequelize.STRING,
+// 	company_category					: Sequelize.STRING,
+// 	company_sub_category				: Sequelize.STRING,
+// 	class_of_company					: Sequelize.STRING,
+// 	date_of_incorporation				: Sequelize.STRING,
+// 	age_of_company						: Sequelize.STRING,
+// 	activity							: Sequelize.STRING,
+// 	number_of_members					: Sequelize.STRING,
+// 	authorised_capital					: Sequelize.STRING,
+// 	paid_up_capital						: Sequelize.STRING,
+// 	number_of_employees					: Sequelize.STRING,
+// 	listing_status						: Sequelize.STRING,
+// 	date_of_last_annual_general_meeting	: Sequelize.STRING,
+// 	date_of_latest_balance_sheet		: Sequelize.STRING,
+// 	_email_id							: Sequelize.STRING,
+// 	address								: Sequelize.STRING,
+// 	directors							: Sequelize.STRING
+// });
+// return stateTableName;
+// }
 
 app.listen('8081')
 
