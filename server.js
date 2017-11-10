@@ -7,20 +7,18 @@ csv = require('csvtojson'),
 rp = require('request-promise');
 BASE_URL = 'https://data.gov.in/';
 
-const Sequelize = require('sequelize');
-const sequelize = new Sequelize('webcrawler', 'root', 'admin', {
-host: 'localhost',
-dialect: 'mysql',
-operatorsAliases: false
-});
+// const Sequelize = require('sequelize');
+// const sequelize = new Sequelize('webcrawler', 'root', 'admin', {
+// host: 'localhost',
+// dialect: 'mysql',
+// operatorsAliases: false
+// });
 
-app.get('/scrap', function (req, res) {
 console.time('TIME-TO-SCRAPE');
 startScraping().then(result => {
 	console.log('COMPLETED!!!!!');
 	console.timeEnd('TIME-TO-SCRAPE');
 })
-});
 
 async function startScraping() {
 let output = [];
