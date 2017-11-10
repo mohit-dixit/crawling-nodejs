@@ -21,14 +21,14 @@ startScraping().then(result => {
 })
 
 async function startScraping() {
-let output = [];
+let output = {};
 
 //get all urns per state.
-for (let i = 0; i <= 5; i++) {
+for (let i = 0; i <= 0; i++) {
 	let url = getNextPageURL(i);
-	let records =  await crawling(url,i);
-	output.push(records);
-	console.log('Output Length  ' + output.length);
+	let result = await crawling(url,i);
+	output = Object.assign(output, result);
+	console.log('Output Length  ' + Object.keys(output).length);
 }
 
 //process urn state wise and store result in finalJSON
@@ -84,16 +84,18 @@ debugger
 
 
 async function crawling(url,index) {
-let stateArray = await getCurrentPageHtml(url);
-let stateUrns = [];
-if (stateArray.length > 0){
-	for( let i = 0; i < stateArray.length; i++ ) {
-		console.log('New State   ',stateArray[i]);
-		let csvRecords = await getCSVRecords(stateArray[i]);
-		stateUrns.push(csvRecords);
+	let stateArray = await getCurrentPageHtml(url);
+	let output = {};
+	if (stateArray.length > 0){
+		for( let i = 0; i < stateArray.length; i++ ) {
+			let stateName = stateArray[i];
+			console.log('New State   ',stateName);
+			output[stateName] = [];
+			let csvRecords = await getCSVRecords(stateName);
+			output[stateName] = csvRecords;
+		}
+		return output;
 	}
-	return stateUrns;
-}
 }
 
 function getPageDetailsUsingUrnId(urnId)
